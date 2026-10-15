@@ -43,10 +43,9 @@ Today they do not:
   says a transfer "fails if the balance is less than `amount`" but defines no
   error. SEP-49, 50, 56 and 57 define none either; the last two say only
   "panic".
-- [SEP-61](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0061.md)
-  reserves codes `1`–`5` for itself and calls `6` and above implementation
-  defined. A contract that implements SEP-61 and any other SEP that makes the
-  same choice has two meanings for `1`, and the client cannot tell.
+- Nothing stops two standards from each claiming the lowest codes. A contract
+  that implements both would then have two meanings for `1`, and the client
+  cannot tell.
 - OpenZeppelin's Stellar library allocates blocks per module (Fungible `1XX`,
   Non-Fungible `2XX`, RWA `3XX`, Vault `4XX`; Pausable `10XX`, Ownable `21XX`,
   and so on). That avoids collisions inside the library, but the same condition
@@ -118,12 +117,12 @@ other `ScErrorType` values, so every `u32` is available to
 
 **SEP-derived codes.** A SEP numbered `N` (`N >= 40`) owns the codes
 `N * 1000 + n` for `n` in `1` – `999`. SEP-41 owns `41001` – `41999`, SEP-50
-owns `50001` – `50999`, and SEP-61 owns `61001` – `61999`. The SEP number is
-already unique and already arbitrated by the SEP process, so no further
-registry is needed, and a reader can recover the standard from a code
-(`code / 1000`). A SEP that defines errors MUST define them in its own block,
-MUST assign `n` values explicitly in its specification, and MUST NOT use a code
-outside its block. Within a block, `n` is assigned sequentially from `1`.
+owns `50001` – `50999`. The SEP number is already unique and already arbitrated
+by the SEP process, so no further registry is needed, and a reader can recover
+the standard from a code (`code / 1000`). A SEP that defines errors MUST define
+them in its own block, MUST assign `n` values explicitly in its specification,
+and MUST NOT use a code outside its block. Within a block, `n` is assigned
+sequentially from `1`.
 
 A contract that implements several standards therefore has disjoint codes by
 construction. A condition that occurs in two standards (for example an
@@ -235,8 +234,8 @@ duplicates what the SEP process already does, since the SEP number is a unique,
 arbitrated identifier, and it would force a registry amendment on every SEP
 that defines an error. A single offset separates framework from user errors but
 does nothing about two libraries colliding inside the user range. Leaving it to
-each SEP is the current state and is what produced the SEP-61 `1`–`5`
-collision. Deriving the block from the SEP number needs no coordination and is
+each SEP is the current state, and it lets two standards claim the same low
+codes. Deriving the block from the SEP number needs no coordination and is
 checkable by a client without a lookup table.
 
 **Why a library registry.** Libraries are not SEPs and already ship codes
@@ -247,8 +246,8 @@ allocation and adds a place for others to claim blocks.
 **Why a local range.** A contract's own conditions need no registry and no SEP.
 Keeping `1`–`99` for them (and the range at the top for contracts that need
 more) makes the common single-contract case need no allocation at all. The cost
-is that SEP-61 would have to move its `1`–`5` into `61001`–`61005`; it is a
-Draft.
+is that a standard cannot use the low codes for itself; it takes its derived
+block instead.
 
 **Why not a codespace.** `ScError::Contract` is a single `u32`. A codespace
 would need an XDR change, a protocol upgrade and new tooling, to gain what a
